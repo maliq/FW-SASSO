@@ -155,7 +155,7 @@ public:
 	}
 
 	data_node* showLASSOSolution(data_node* &tempSolution);
-	data_node* printLASSOSolution(data_node* tempSolution, double objective, double delta);
+	data_node* printLASSOSolution(data_node* tempSolution, double objective, double delta, double L2norm2Cotter);
 
 	bool compareLASSOSolutions(data_node* previousSolution, data_node* newSolution);
 

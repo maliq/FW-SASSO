@@ -571,6 +571,7 @@ int SASSO::StandardFW(double convergence_eps, bool cooling, bool randomized){
 		printf("** FINAL DUAL GAP = %g\n",dual_gap);
 		printf("** ITERATIONS = %d\n",greedy_it);
 		printf("** L1-NORM SOLUTION = %.10f\n",l1norm_solution);
+		printf("** SK (L2-NORM COTTER) = %.10f\n",Sk);
 		printf("** Active Features=%d\n",coreNum);
 		
 
@@ -595,8 +596,9 @@ int SASSO::StandardFW(double convergence_eps, bool cooling, bool randomized){
 		}
 
 	    if(param->print_regularization_path){
- 			 this->printLASSOSolution(newSolution, objective, delta);
- 		}
+ 			//Sk is L2norm2Cotter
+ 			this->printLASSOSolution(newSolution, objective, delta, Sk);
+		}
  	
 		bool difference = true;
 		bool intern = false;
@@ -645,7 +647,7 @@ return true;
 }
 
 
-data_node* SASSO::printLASSOSolution(data_node* tempSolution, double objective, double delta){
+data_node* SASSO::printLASSOSolution(data_node* tempSolution, double objective, double delta, double L2norm2Cotter){
 	
 	printf("******** FILE NAME: %s ***********************\n",param->results_file_name);
 
@@ -670,6 +672,7 @@ data_node* SASSO::printLASSOSolution(data_node* tempSolution, double objective, 
 	fprintf(resultsFile," %d",count_actives);
 	fprintf(resultsFile," %g",L1norm);
 	fprintf(resultsFile," %g",obj_value);
+	fprintf(resultsFile," %g",L2norm2Cotter);
 	
 	i=0;
 	while(tempSolution[i].index!=-1){

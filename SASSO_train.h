@@ -58,13 +58,13 @@ public:
 		std::ifstream myfile_ (reg_path_filename);
 		std::string line;
 		std::istringstream iss;
-		double delta,l1norm,obj,value;
+		double delta,l1norm,obj,value,l2norm_cotter;
 		int support_size,idx;
 		int count_models=0;
 		while (std::getline(myfile_, line))
 		{
 		    std::istringstream iss(line);
-		    if (iss >> delta >> support_size >> l1norm >> obj)
+		    if (iss >> delta >> support_size >> l1norm >> obj >> l2norm_cotter)
 		    	count_models++;
 		 
 		}
@@ -82,7 +82,7 @@ public:
 		    std::string component2;
 		    sasso_model* model = new sasso_model();
 
-		    if (iss >> delta >> support_size >> l1norm >> obj){
+		    if (iss >> delta >> support_size >> l1norm >> obj >> l2norm_cotter){
 		    	model->bias=problem->bias;
 				model->params = params;
 				model->input_problem = problem;		
