@@ -117,7 +117,6 @@ void SASSO_train::test_regularization_path(sasso_model** models, sasso_problem* 
 
 	if(save_testing!=NULL)
 		fclose(save_testing);
-
 	
 }
 
@@ -1027,10 +1026,11 @@ int main(int argc, char **argv){
 	printf("1<<20 %d ...\n",1<<20);
 
 	problem = fw->readSASSOProblem(input_file_name);
-	FILE* summary_exp = fopen(params->summary_exp_file_name,"w");
+
 
 	if(params->exp_type == EXP_SINGLE_TRAIN){
 
+		FILE* summary_exp = fopen(params->summary_exp_file_name,"w");
 		fw->printParams(stdout,params);
 		sasso_model* trained_model = fw->train(problem,params,stats);
 		fw->printParams(summary_exp,params);
@@ -1039,6 +1039,7 @@ int main(int argc, char **argv){
 			fw->test_simplified_SVM(trained_model,params,params->test_data_file_name);
 		}
  		fw->destroyProblem(problem);
+ 		fclose(summary_exp);
 	}
 	
 	if(params->exp_type == EXP_REGULARIZATION_PATH){
@@ -1067,13 +1068,10 @@ int main(int argc, char **argv){
 
 	}
 
-	
-
-
 	//test_input_SVM(sasso_problem* prob, sasso_parameters* params, char* testset_file_name){
 
-	fclose(summary_exp);
-	return 1;
+
+	return 0;
 
 }
 
