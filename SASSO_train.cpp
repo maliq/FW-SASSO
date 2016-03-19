@@ -520,15 +520,16 @@ void SASSO_train::count_pattern_SASSO(FILE *fp, sasso_problem* prob, int &elemen
     prob->bias=bias;
 
     int c;
-    do
+    while ( (c=fgetc(fp)) != EOF )
     {
-	    c = fgetc(fp);
 	    switch(c)
 	    {
 		    case '\n':
 		    	prob->l += 1;
 		    	if ((type == 1) && (dim == 0)) // dense format
-			        dim = elements;				    
+					dim = ++elements;
+		        else if (type == 1) 
+		        	++elements;			    
 			    break;
 
 		    case ':':
@@ -540,16 +541,10 @@ void SASSO_train::count_pattern_SASSO(FILE *fp, sasso_problem* prob, int &elemen
 			    type = 1;
 			    break;
 
-			case EOF:
-		    	prob->l += 1;
-		    	if ((type == 1) && (dim == 0)) // dense format
-			        dim = elements;				    
-			    break;
-
 		    default:
 			    ;
 	    }
-    } while  (c != EOF);
+    }
     
     rewind(fp);
     fscanf(fp, "%s %s %lf\n", str1, str2, &bias);
@@ -603,10 +598,7 @@ void SASSO_train::count_pattern(FILE *fp, dataset* prob, int &elements, int &typ
 			    type = 1;
 			    break;
 
-			case EOF:
-		    	prob->l += 1;
-		    	if ((type == 1) && (dim == 0)) // dense format
-			        dim = elements;				    
+			case EOF:			    
 			    break;
 
 		    default:
