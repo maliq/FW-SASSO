@@ -1,5 +1,13 @@
-CXX? = g++ 
-CFLAGS = -std=c++11 -Wall -Wconversion -O3 -fPIC
+CXX? = g++
+
+#--- debug flags
+#CFLAGS = -std=c++11 -Wall -Wconversion -O3 -fPIC -g3
+
+#--- optimize flags
+CFLAGS = -std=c++11 -Wall -Wconversion -O3 -fPIC -funroll-loops -fomit-frame-pointer -DNDEBUG
+#CFLAGS = -std=c++11 -Wall -Wconversion -O3 -fPIC
+
+
 FW_LIB = SASSO.o SASSO_kernel.o sCache.o mCache.o Simple_Kernel_Function.o TEST_kernel.o
 
 all: sasso-train
