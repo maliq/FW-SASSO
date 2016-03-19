@@ -650,7 +650,7 @@ void SASSO_train::parse_command_line(sasso_parameters* params, int argc, char **
 	params->nsamplings_safe_stopping = 1;
 	params->nsamplings_iterations = 1;
 	params->n_steps_reg_path = 100;
-	params->BORDER_WARM_START = true;
+	params->BORDER_WARM_START = false;
 	params->ACTIVE_SET_HEURISTIC = false;
 	params->kernel_type = -1;
 	params->gamma = -1.0;
