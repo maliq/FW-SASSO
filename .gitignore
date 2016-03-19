@@ -1,1 +1,3 @@
 sasso-train
+*.o
+.idea/
