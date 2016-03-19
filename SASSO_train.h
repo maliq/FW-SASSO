@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <string>
 #include <sstream>
+#include <map>
 
 class SASSO_train
 {
@@ -45,6 +46,12 @@ public:
 		test_model(model,params,test_file_name);
 	}
 	void test_regularization_path(sasso_model** models, sasso_problem* input_problem, sasso_parameters* params, char* testset_file_name);
+
+	void test_all_regularization_path(sasso_model** models, sasso_problem* input_problem,
+									  sasso_parameters* params, std::string testset_file_name,
+									  int init_step, int step_size, std::map<int, double>& model_missclass,
+									  std::map<int, int>& map_support_size, std::map<int, double>& map_hinge,
+									  std::map<int, double>& map_l1norm);
 
 	double l1norm_input_SVM(sasso_problem* prob);
 	void test_model(sasso_model* model, sasso_parameters* params, dataset* testset);

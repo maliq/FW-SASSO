@@ -7,6 +7,7 @@
 #include <math.h>
 #include <limits>
 #include <stdexcept>
+#include <map>
 
 
 double SASSO_train::l1norm_input_SVM(sasso_problem* prob){
@@ -117,7 +118,44 @@ void SASSO_train::test_regularization_path(sasso_model** models, sasso_problem* 
 
 	if(save_testing!=NULL)
 		fclose(save_testing);
-	
+
+	printf("END TESTING\n");	
+}
+
+void SASSO_train::test_all_regularization_path(sasso_model** models, sasso_problem* input_problem,
+                                               sasso_parameters* params, std::string testset_file_name,
+                                               int step_init, int step_size, std::map<int, double>& model_missclass,
+											   std::map<int, int>& map_support_size, std::map<int, double>& map_hinge,
+											   std::map<int, double>& map_l1norm){
+
+	std::cout << "READING TEST DATA from " << testset_file_name << std::endl;
+    dataset* testdata = this->readClassificationDataSet(testset_file_name.c_str());
+    printf("READING TEST DATA DONE.\n");
+
+    TEST_Q* testQ = new TEST_Q(testdata,input_problem,params,params->cache_size);
+
+	int support_size;
+	int mistakes;
+	double hinge_loss;
+	double l1norm;
+
+
+    for(int i=step_init-1; i < (int)params->n_steps_reg_path; i+= step_size){
+        printf("START -- Model Number = %d\n",i+1);
+        sasso_model* model = models[i];
+        data_node* weights = model->weights;
+		printf("Model Number = %d loaded\n",i+1);
+        mistakes = testQ->testSVM(weights,model->bias,mistakes,support_size,hinge_loss,l1norm);
+        double misclass = (double)mistakes/(double)testdata->l;
+		printf("Misclassification Rate = %f\n",misclass);
+
+        model_missclass[i] += misclass;
+		map_hinge[i] += hinge_loss;
+		map_support_size[i] = support_size;
+		map_l1norm[i] = l1norm;
+    }
+
+    printf("END TESTING\n");
 }
 
 void SASSO_train::test_model(sasso_model* model, sasso_parameters* params, char* testset_file_name){
@@ -822,7 +860,7 @@ void SASSO_train::parse_command_line(sasso_parameters* params, int argc, char **
 		}
 	}
 
-	if(params->exp_type != TEST_REG_PATH){
+	if(params->exp_type != TEST_REG_PATH && params->exp_type != TEST_ALL_REG_PATH){
 
 		if(i<argc-1) 
 		{
@@ -1065,6 +1103,53 @@ int main(int argc, char **argv){
 		if(params->test_data_file_name!=NULL){
 			fw->test_regularization_path(models_path,problem,params,params->test_data_file_name);
 		}
+
+	}
+
+	if(params->exp_type == TEST_ALL_REG_PATH){
+		printf("Reading SASSO Problem from = %s for test ALL\n",input_file_name);
+		sasso_problem* problem = fw->readSASSOProblem(input_file_name);
+        //Load the path sasso model
+		sasso_model** models_path = fw->load_models_from_regularization_path(problem,path_file_name, params);
+        std::map<int, double> model_missclass;
+		std::map<int, int> support_size;
+		std::map<int, double> hinge_loss;
+		std::map<int, double> l1norm;
+        int step_init = 10;
+        int step_size = 10;
+        for(int i=step_init-1; i < (int)params->n_steps_reg_path; i+= step_size){
+            model_missclass[i] = 0;
+			hinge_loss[i] = 0;
+        }
+
+
+        for(int i = 1; i<=10; i++) {
+            //test data test_data_file_name
+            if (params->test_data_file_name != NULL) {
+                // models_path = path of sasso.
+                // problem train/target from input_file_name.
+                // params:
+                // test_data_file_name = test file.
+                fw->test_all_regularization_path(models_path, problem, params,
+                                                 std::string(params->test_data_file_name) + std::to_string(i),
+                                                 step_init, step_size, model_missclass,
+												 support_size, hinge_loss, l1norm);
+            }
+        }
+
+		FILE* save_testing=NULL;
+		if(params->save_file_testing_reg_path)
+			save_testing=fopen(params->file_testing_reg_path,"w");
+
+        std::cout << "Printing miss class error: " << std::endl;
+        for(int i=step_init-1; i < (int)params->n_steps_reg_path; i+= step_size){
+			if(save_testing!=NULL){
+				fprintf(save_testing,"%d %g %g %g\n",support_size[i],model_missclass[i]/10,hinge_loss[i]/10,l1norm[i]);
+			}
+			printf("%d %g %g %g\n",support_size[i],model_missclass[i]/10,hinge_loss[i]/10,l1norm[i]);
+        }
+		if(save_testing!=NULL)
+			fclose(save_testing);
 
 	}
 
