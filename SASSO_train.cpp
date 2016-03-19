@@ -102,10 +102,10 @@ void SASSO_train::test_regularization_path(sasso_model** models, sasso_problem* 
 	double l1norm;
 
 	for(int i=0; i < (int)params->n_steps_reg_path; i++){
+				printf("START -- Model Number = %d\n",i+1);
 				sasso_model* model = models[i];
 				data_node* weights = model->weights;
 				mistakes = testQ->testSVM(weights,model->bias,mistakes,support_size,hinge_loss,l1norm);
-				printf("Model Number = %d\n",i+1);
 				printf("Number of Support Vectors = %d\n",support_size);
 				printf("Misclassification Rate = %f\n",(double)mistakes/(double)testdata->l);
 				printf("Hinge Loss = %g\n",hinge_loss);
