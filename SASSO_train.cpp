@@ -340,11 +340,10 @@ sasso_problem* SASSO_train::readSASSOProblem(const char *filename){
 		}
 		double label;
 		prob->x[i] = &prob->x_space[j];
-		if (type == 0) // sparse format
-		{
-			fscanf(fp,"%lf",&label);
-			prob->alpha_orig[i] = label/THE_CONSTANT;
-		}
+
+		// load the weight for dense or sparse
+		fscanf(fp,"%lf",&label);
+		prob->alpha_orig[i] = label/THE_CONSTANT;
 
 		int elementsInRow = 0;
 		while(1)
@@ -362,15 +361,21 @@ sasso_problem* SASSO_train::readSASSOProblem(const char *filename){
 
 			if (type == 0) // sparse format
 			{
-
 				fscanf(fp,"%d:%lf",&(prob->x_space[j].index),&(prob->x_space[j].value));
 				++j;
 			}
-			else if ((type == 1) && (elementsInRow < dim)) // dense format, read a feature
+			else if ((type == 1) && (elementsInRow < dim-1)) // dense format, read a feature
 			{
 				prob->x_space[j].index = elementsInRow+1;
 				elementsInRow++;
 				fscanf(fp, "%lf,", &(prob->x_space[j].value));
+				++j;
+			}
+			else if ((type == 1) && (elementsInRow == dim-1)) // dense format, read a feature
+			{
+				prob->x_space[j].index = elementsInRow+1;
+				elementsInRow++;
+				fscanf(fp, "%lf", &(prob->x_space[j].value));
 				++j;
 			}
 			else if ((type == 1) && (elementsInRow >= dim)) // dense format, read the label
