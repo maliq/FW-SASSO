@@ -651,7 +651,7 @@ void SASSO_train::parse_command_line(sasso_parameters* params, int argc, char **
 	params->nsamplings_iterations = 1;
 	params->n_steps_reg_path = 100;
 	params->BORDER_WARM_START = true;
-	params->ACTIVE_SET_HEURISTIC = true;
+	params->ACTIVE_SET_HEURISTIC = false;
 	params->kernel_type = -1;
 	params->gamma = -1.0;
 	params->degree = -1;
@@ -704,15 +704,6 @@ void SASSO_train::parse_command_line(sasso_parameters* params, int argc, char **
 						params->BORDER_WARM_START  = true;
 					} else {
 						params->BORDER_WARM_START  = false;
-					}
-				}
-				break;
-			case 'A':
-				if(argv[i-1][2]=='H'){
-					if(atoi(argv[i])>0){
-						params->ACTIVE_SET_HEURISTIC  = true;
-					} else {
-						params->ACTIVE_SET_HEURISTIC  = false;
 					}
 				}
 				break;
