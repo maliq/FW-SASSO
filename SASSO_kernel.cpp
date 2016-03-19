@@ -48,7 +48,7 @@ SASSO_Q::SASSO_Q(const sasso_problem* prob_, const sasso_parameters* param_, dou
 		} else {
 			kernelCache = new sCache(100, prob->l);
 			int elements = max((int)((param_->cache_size*(1<<20))/sizeof(Qfloat)),10);
-			columnsCache = new mCache(elements,prob->l);
+			columnsCache = new mCache(elements, prob->l, prob->l);
 			printf("Elements is %d\n",elements);
 		}
 			

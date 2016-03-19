@@ -43,8 +43,8 @@ TEST_Q::TEST_Q(const dataset* testset_, const sasso_problem* train_problem_, con
 		}
 
 		int elements = max((int)((cache_size*(1<<20))/sizeof(Qfloat)),10);
-		columnsCache = new mCache(elements,testset->l);
-		printf("TEST CACHE can allocate %d columns of size %d\n",elements,testset->l);
+		columnsCache = new mCache(elements, testset->l, train_problem->l);
+		printf("TEST CACHE can allocate %d columns of size %d for TRAIN SIZE\n",elements,train_problem->l);
 		clone(x_train,train_problem->x,train_problem->l);
 		clone(x_test,testset->x,testset->l);
 		

@@ -8,16 +8,16 @@
 class mCache
 {
 public:
-	mCache(int size_, int depth_){
+	mCache(int size_, int depth_, int max_index){
 		size=size_;
 		depth=depth_;
 
-		positions = new int[depth];
+		positions = new int[max_index];
 		use_stats = new int[size];
 		inverted_positions = new int[size];
 		pointers_to_data = new Qfloat*[size];
 
-		for(int i=0; i< depth; i++)
+		for(int i=0; i< max_index; i++)
 			positions[i]=-1;
 		
 		for(int i=0; i< size; i++){
