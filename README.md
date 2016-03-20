@@ -1,13 +1,13 @@
  
-# THE SASSO IMPLEMENTED VIA FRANK-WOLFE.
+# The SASSO implemented via FRANK-WOLFE.
 
 ## Features
-* DETERMISTIC VERSION FULLY TESTED AND IMPLEMENTED WITH RECURSIVE GRADIENT UPDATES AND A SPECIAL CACHE DATA STRUCTURE (MCACHE) DESIGNED TO STORE ENTIRE COLUMNS OF THE KERNEL MATRIX. THIS RESULTS MUCH BETTER THAN THE OLD SCACHE IN THIS SETTING (DETERMISTIC).
-* THE MODELS COMPUTED ALONG THE PATH ARE SAVED, AS USUAL, TO THE RESULTS FILE, BUT ARE ALSO SAVED FOR FURTHER PROCESSING.
-* TESTING OF THE MODELS COMPUTED ALONG THE PATH IS EFFICIENTLY IMPLEMENTED USING AN SPECIAL DATA STRUCTURE (TEST KERNEL). 
-* THE LATTER CAN BE APPLIED IMMEDIATLY AFTER COMPUTING THE PATH, OR FROM SCRATCH PROVIDING THE NAME OF THE RESULTS FILE.
+* Deterministic version fully tested and implemented with recursive gradient updates and a special cache data structure (mcache) designed to store entire columns of the kernel matrix. this results much better than the old scache in this setting (deterministic).
+* The models computed along the path are saved, as usual, to the results file, but are also saved for further processing.
+* Testing of the models computed along the path is efficiently implemented using an special data structure (test kernel).
+* The latter can be applied immediately after computing the path, or from scratch providing the name of the results file.
 
 ## TODO
-* RANDOMIZED VERSION WORKS BUT HAS NOT BEEN OPTIMIZED IN TERMS OF EFFICIENCY.
-* PROBABLY, IT IS A GOOD IDEA TO ADD THE RECURSIVE COMPUTATION OF THE GRADIENTS CORRESPONDING TO ACTIVE POINTS.
+* Randomized version works but has not been optimized in terms of efficiency.
+* Probably, it is a good idea to add the recursive computation of the gradients corresponding to active points.
 
