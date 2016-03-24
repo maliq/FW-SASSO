@@ -834,6 +834,7 @@ void SASSO_train::parse_command_line(sasso_parameters* params, int argc, char **
 	params->coef0 = 0.0;
 	params->test_data_file_name = NULL;
 	params->file_validation_set = NULL;
+    params->syntB = false;
 	params->save_models_along_the_path = false;
 	params->save_file_testing_reg_path = false;
 
@@ -980,6 +981,12 @@ void SASSO_train::parse_command_line(sasso_parameters* params, int argc, char **
 			case 'a':
 				params->sample_size = atoi(argv[i]);
 				break;
+            case 'b':
+                if(atoi(argv[i]) == 0)
+                    params->syntB = false;
+                else
+                    params->syntB = true;
+                break;
 			default:
 				fprintf(stderr,"unknown option\n");
 				exit_with_help();
@@ -1270,14 +1277,14 @@ int main(int argc, char **argv){
 	}
 
 	if(params->exp_type == TEST_ALL_REG_PATH){
-		printf("Reading SASSO Problem from = %s for test ALL\n",input_file_name);
-		sasso_problem* problem = fw->readSASSOProblem(input_file_name);
+		printf("Readed SASSO Problem from = %s for test ALL\n",input_file_name);
         //Load the path sasso model
 		sasso_model** models = fw->load_models_from_regularization_path(problem,path_file_name, params, false);
         std::map<int, double> model_missclass;
 		std::map<int, int> support_size;
 		std::map<int, double> hinge_loss;
 		std::map<int, double> l1norm;
+        std::string file_validation_set_wildcard;
         int step_init = 10;
         int step_size = 10;
         for(int i=step_init-1; i < (int)params->n_steps_reg_path; i+= step_size){
@@ -1285,8 +1292,34 @@ int main(int argc, char **argv){
 			hinge_loss[i] = 0;
         }
 
+		if (params->file_validation_set == NULL) {
+			printf("ERROR: Validation is Required ...\n");
+		} else {
+            file_validation_set_wildcard = std::string(params->file_validation_set);
+		}
+
 
         for(int i = 1; i<=10; i++) {
+			if (params->syntB) {
+				//reload model
+				if(i>1){
+					delete(models);
+					models = fw->load_models_from_regularization_path(problem,path_file_name, params, false);
+				}
+
+                // set validation_file
+                std::string file_validation_set_str = file_validation_set_wildcard + std::to_string(i);
+                params->file_validation_set = new char [file_validation_set_str.length()+1];
+                std::strcpy (params->file_validation_set, file_validation_set_str.c_str());
+
+                printf("SYNTONIZING B .... \n");
+				sasso_model* model = models[99];
+				printf("*** B before: %f \n",model->bias);
+                fw->syntonizeB(models, problem, params, path_file_name);
+				model = models[90];
+				printf("*** B after: %f \n",model->bias);
+			}
+
             //test data test_data_file_name
             if (params->test_data_file_name != NULL) {
                 // models_path = path of sasso.

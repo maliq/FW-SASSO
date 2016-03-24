@@ -133,6 +133,7 @@ struct sasso_parameters
 	char* file_testing_reg_path;
 	char* file_validation_set;
 	char* file_new_reg_path;
+	bool syntB;
 
 };
 
