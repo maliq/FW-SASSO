@@ -30,7 +30,7 @@ public:
 
 	~mCache(){
 
-		for(int i=0; i< size; i++)
+		for(int i=0; i< used; i++)
 			delete[] pointers_to_data[i];
 		
 		delete[] positions;
