@@ -13,11 +13,12 @@ public:
 
 	~TEST_Q()
 	{
-		
-		if(!param->randomized)
-			delete columnsCache;
+		//if(!param->randomized)
+		delete columnsCache;
 		delete[] x_train;
 		delete[] x_test;
+		if(kernel_type == RBF || kernel_type == NORMAL_POLY || kernel_type == EXP || kernel_type == INV_DIST || kernel_type == INV_SQDIST)
+			delete[] x_test_square;
 	}
 
 	Qfloat* get_KernelColumn(int train_idx);

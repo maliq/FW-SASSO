@@ -213,6 +213,11 @@ void SASSO_train::syntonizeB(sasso_model **models, sasso_problem* input_problem,
 	if(save_testing!=NULL)
 		fclose(save_testing);
 
+	free(testdata->y);
+	free(testdata->x);
+	free(testdata->x_space);
+	free(testdata);
+	delete(testQ);
 
 }
 
@@ -285,6 +290,12 @@ void SASSO_train::test_all_regularization_path(sasso_model** models, sasso_probl
 		map_support_size[i] = support_size;
 		map_l1norm[i] = l1norm;
     }
+
+    free(testdata->y);
+    free(testdata->x);
+    free(testdata->x_space);
+    free(testdata);
+    delete(testQ);
 
     printf("END TESTING\n");
 }
@@ -1302,11 +1313,14 @@ int main(int argc, char **argv){
         }
 		if(save_testing!=NULL)
 			fclose(save_testing);
+		delete(models);
 
 	}
 
 	//test_input_SVM(sasso_problem* prob, sasso_parameters* params, char* testset_file_name){
 
+	delete(fw);
+	delete(problem);
 
 	return 0;
 
