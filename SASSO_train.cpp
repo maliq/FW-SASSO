@@ -1179,8 +1179,12 @@ void SASSO_train::exit_with_help()
 	"Options:\n"
 	"-E : experiment-type (default 0)\n"
 	"     0 -- SASSO with known regularization parameter\n"
-	"     1 -- SASSO regularization path\n" 
-	"-k : kernel type (default 2)\n" 
+	"     1 -- SASSO regularization path\n"
+	"     2 -- test single model\n"
+	"     3 -- test SASSO regularization path\n"
+	"     4 -- Syntonization of b\n"
+	"     5 -- mean test SASSO regularization path of 10 validation files\n"
+	"-k : kernel type (default 2)\n"
 	"     0: LINEAR, 1: POLY, 2: RBF, 3: SIGMOID\n"
 	"-g : gamma parameter for RBF kernels\n" 
 	"-c : coef0 parameter for POLY and SIGMOID kernels\n" 
@@ -1197,6 +1201,7 @@ void SASSO_train::exit_with_help()
 	"-SM: save the model(s) after training\n"
 	"-m cachesize: set cache memory size in MB (default 200)\n"
 	"-a size: sample size for probabilistic sampling (default 60)\n"
+    "-b : synchronize B\n"
 	);
 	exit(1);
 }
