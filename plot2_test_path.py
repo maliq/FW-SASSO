@@ -15,5 +15,5 @@ plt.xscale('log')
 plt.ylabel("Test Error")
 plt.legend(loc='upper right');
 plt.title("Test Error vs Support Size on %s"% sys.argv[3])
-#plt.show()
-plt.savefig("experiments/result/%s_issvm_vs_sasso.png" % sys.argv[3])
+plt.savefig("%s_issvm_vs_sasso." % sys.argv[3])
+plt.show()
