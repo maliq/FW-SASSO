@@ -35,6 +35,12 @@ public:
 	void reset_real_kevals();
 	void reset_requested_kevals();
 	
+	double* getSVActivations(data_node* weights,int& support_size, double& l1norm);
+	int testSVM(double* activations, double bias, int& mistakes, double& hinge);
+	int getNtest(){
+		return testset->l;
+	}
+
 private:
 
 	const sasso_parameters* param;

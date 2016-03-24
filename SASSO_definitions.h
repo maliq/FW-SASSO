@@ -20,7 +20,7 @@ struct sasso_model;
 enum { BC, FW, MODFW, PARTAN, SWAP}; //training algorithms
 enum { ZERO };//initialization methods
 enum { PRIMAL, DUAL };//data representation model
-enum { EXP_SINGLE_TRAIN, EXP_REGULARIZATION_PATH, TEST_INPUT_MODEL, TEST_REG_PATH, TEST_ALL_REG_PATH};
+enum { EXP_SINGLE_TRAIN, EXP_REGULARIZATION_PATH, TEST_INPUT_MODEL, TEST_REG_PATH, SYNC_B, TEST_ALL_REG_PATH};
 enum { STOPPING_WITH_DUAL_GAP, STOPPING_WITH_INF_NORM, STOPPING_WITH_OBJECTIVE};
 enum { UNIFORM, BLOCKS};
 enum { LINEAR, POLY, RBF, SIGMOID, EXP, NORMAL_POLY, INV_DIST, INV_SQDIST };   /* kernel_type */
@@ -131,6 +131,9 @@ struct sasso_parameters
 
 	bool save_file_testing_reg_path;
 	char* file_testing_reg_path;
+	char* file_validation_set;
+	char* file_new_reg_path;
+
 };
 
 
@@ -140,6 +143,12 @@ struct sasso_model
 	sasso_problem* input_problem;
 	data_node *weights;		
 	double bias;
+	
+	double delta;
+	int ss;
+	double l1norm;
+	double l2norm_cotter;
+	double obj_val;
 
 	double *obj; 
 	unsigned long int *smo_it; //for solvers using SMO

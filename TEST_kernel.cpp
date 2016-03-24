@@ -60,6 +60,47 @@ TEST_Q::TEST_Q(const dataset* testset_, const sasso_problem* train_problem_, con
 }
 
 
+double* TEST_Q::getSVActivations(data_node* weights, int& support_size, double& l1norm){
+
+	support_size=0;
+	l1norm=0.0;
+
+	double* activations = new double[testset->l];
+	for(int test_idx=0; test_idx<testset->l; test_idx++)
+			activations[test_idx] = 0.0;
+
+	while(weights->index!=-1){
+		Qfloat* kprods = get_KernelColumn(weights->index);
+		support_size+=1;
+		l1norm+=std::abs(weights->value);
+		for(int test_idx=0; test_idx<testset->l; test_idx++)
+			activations[test_idx] += (double)kprods[test_idx]*weights->value;
+		weights++;
+	}
+
+	return activations;
+}
+
+int TEST_Q::testSVM(double* activations, double bias, int& mistakes, double& hinge){
+
+	mistakes=0;
+	hinge=0.0;
+	int predicted_class;
+
+	for(int test_idx=0; test_idx<testset->l; test_idx++){
+			double discriminant = activations[test_idx] + bias;
+			
+			predicted_class = (discriminant>=0.0) ? 1 : -1;
+			int true_class = (testset->y[test_idx]>=0.0) ? 1 : -1;
+			if(predicted_class!=true_class)
+				mistakes += 1;
+			hinge += (double)testset->y[test_idx]*discriminant;
+	}
+	
+	return mistakes;
+}
+
+
 int TEST_Q::testSVM(data_node* weights, double bias, int& mistakes, int& support_size, double& hinge, double& l1norm){
 	
 	double* activations = new double[testset->l];
@@ -81,14 +122,36 @@ int TEST_Q::testSVM(data_node* weights, double bias, int& mistakes, int& support
 	}
 
 	int predicted_class;
+	int mistakes_pos = 0;
+	int mistakes_neg = 0;
+	int n_pos = 0;
+	int n_neg = 0;
 
 	for(int test_idx=0; test_idx<testset->l; test_idx++){
 			double discriminant = activations[test_idx];
+			//printf("DISCRIMINANT %g\n",discriminant);
+			//printf("B %g\n",bias);
+			//printf("ACTIVATIONS %g\n",activations[test_idx]-bias);
+			if(testset->y[test_idx]==1)
+				n_pos +=1;
+			else
+				n_neg +=1;
+
 			predicted_class = (discriminant>=0) ? 1 : -1;
-			if(predicted_class!=testset->y[test_idx])
+			int true_class = (testset->y[test_idx]>=0.0) ? 1 : -1;
+			if(predicted_class!=true_class){
 				mistakes += 1;
+				if(testset->y[test_idx]==1)
+					mistakes_pos +=1;
+				else
+					mistakes_neg +=1;
+				//printf("MISTAKE\n");
+			}
+			//printf("DECISION %d, CLASS %g\n",predicted_class,testset->y[test_idx]);
 			hinge += (double)testset->y[test_idx]*discriminant;
 	}
+	printf("MISTAKES POS=%d MISTAKES NEG=%d\n",mistakes_pos,mistakes_neg);
+	printf("N POS=%d N NEG=%d\n",n_pos,n_neg);
 
 	delete[] activations;
 	return mistakes;
