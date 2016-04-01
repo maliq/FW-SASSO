@@ -46,6 +46,8 @@ public:
 		test_model(model,params,test_file_name);
 	}
 	void test_regularization_path(sasso_model** models, sasso_problem* input_problem, sasso_parameters* params, char* testset_file_name);
+	double chooseB(double* SV_activations, TEST_Q* testQ,double best_b_now);
+	void syntonizeB(sasso_model **models, sasso_problem *input_problem, sasso_parameters *params, char *path_file_name);
 
 	void test_all_regularization_path(sasso_model** models, sasso_problem* input_problem,
 									  sasso_parameters* params, std::string testset_file_name,
@@ -57,7 +59,7 @@ public:
 	void test_model(sasso_model* model, sasso_parameters* params, dataset* testset);
 	void test_model(sasso_model* model, sasso_parameters* params, char* test_file_name);
 
-	sasso_model** load_models_from_regularization_path(sasso_problem* problem, char* reg_path_filename, sasso_parameters* params){
+	sasso_model** load_models_from_regularization_path(sasso_problem* problem, char* reg_path_filename, sasso_parameters* params, bool read_b){
 
 		
 		printf("Reading Regularization Path from = %s\n",reg_path_filename);
@@ -66,8 +68,10 @@ public:
 		std::string line;
 		std::istringstream iss;
 		double delta,l1norm,obj,value,l2norm_cotter;
-		int support_size,idx;
+		int support_size;
+		int idx;
 		int count_models=0;
+
 		while (std::getline(myfile_, line))
 		{
 		    std::istringstream iss(line);
@@ -76,11 +80,14 @@ public:
 		 
 		}
 
+		printf("DETECTED %d MODELS\n",count_models);
+
 		myfile_.close();
 		sasso_model** models =  new sasso_model*[count_models];
 
 		std::ifstream myfile (reg_path_filename);
 		count_models=0;
+
 		while (std::getline(myfile, line))
 		{
 		    std::istringstream iss(line);
@@ -90,6 +97,13 @@ public:
 		    sasso_model* model = new sasso_model();
 
 		    if (iss >> delta >> support_size >> l1norm >> obj >> l2norm_cotter){
+
+		    	model->delta=delta;
+		    	model->ss=support_size;
+		    	model->l1norm = l1norm;
+		    	model->l2norm_cotter = l2norm_cotter;
+		    	model->obj_val = obj;
+
 		    	model->bias=problem->bias;
 				model->params = params;
 				model->input_problem = problem;		
@@ -101,8 +115,17 @@ public:
 			    	std::getline(ss, component2, ':');
 			    	idx=std::stoi(component1);
 			    	value=std::stod(component2);
-			    	model->weights[count_features].index = idx;
-			    	model->weights[count_features].value = value;
+			    	if(idx>=0){
+			    		model->weights[count_features].index = idx;
+			    		model->weights[count_features].value = value;
+			    	} else {
+			    		printf("NEGATIVE INDEX DETECTED, IDX=%d, VALUE=%g\n",idx,value);
+			    		if(read_b){
+			    			if(idx == -1){
+			    				model->bias = value;
+			    			}
+			    		}
+			    	}
 			    	count_features++;
 		    	}
 		    	model->weights[support_size].index=-1;

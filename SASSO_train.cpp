@@ -85,6 +85,149 @@ void SASSO_train::test_model(sasso_model* model, sasso_parameters* params, datas
 
 }
 
+double SASSO_train::chooseB(double* SV_activations, TEST_Q* testQ, double best_b_now){
+
+	double b_ = 0.0;
+	double act_max = SV_activations[0];
+	double act_min = SV_activations[0];
+
+	int l = testQ->getNtest();
+
+	bool verbose = false;
+
+	for(int test_idx=0; test_idx<l; test_idx++){
+		if(SV_activations[test_idx]>act_max)
+			act_max = SV_activations[test_idx];
+		if(SV_activations[test_idx]<act_min)
+			act_min = SV_activations[test_idx];
+	}
+
+	double b_min  = -1.0*act_max;
+	double b_max  = -1.0*act_min;
+	printf("TEST N = %d\n", l);
+	printf("B_MIN = %g\n",b_min);
+	printf("B_MAX = %g\n",b_max);
+
+	int mistakes__=0;
+	double hinge__ = 0.0;
+
+	int n_b = 10000;
+	double step = (b_max - b_min)/((double)n_b);
+	printf("B_STEP = %g\n",step);
+
+	double b_candidate = b_min - step;
+	double best_b = best_b_now;
+	int best_error = testQ->testSVM(SV_activations,best_b,mistakes__,hinge__);
+	double best_hinge=hinge__;
+
+	printf("CURRENT B = %g\n",best_b);
+	printf("CURRENT MARGEN = %f\n",best_hinge);
+	
+	for(int b_idx=0;b_idx<n_b;b_idx++){
+		b_candidate = b_candidate + step;
+		int error = testQ->testSVM(SV_activations,b_candidate,mistakes__,hinge__);
+//		if(error < best_error){
+//			if(verbose)
+//				printf("BETTER B ... B= %g, ERROR=%d, CURRENT_BEST_ERR=%d, CURRENT_BEST_B=%g\n",b_candidate,error,best_error,best_b);
+//			best_error = error;
+//			best_b = b_candidate;
+//		}
+		if(hinge__ > best_hinge){
+			if(verbose)
+				printf("BETTER B ... B= %g, MARGEN=%f, CURRENT_BEST_MARGEN=%f, CURRENT_BEST_B=%g\n",b_candidate,hinge__,best_hinge,best_b);
+			best_hinge = hinge__;
+			best_b = b_candidate;
+		}
+	}
+	printf("LAST B EXPLORED = %g\n",b_candidate);
+	printf("LAST MARGEN = %f\n",best_hinge);
+
+	b_ =  best_b;
+	printf("BEST_B = %g\n",b_);
+
+	return b_;
+
+}
+
+void SASSO_train::syntonizeB(sasso_model **models, sasso_problem* input_problem, sasso_parameters* params, char* path_file_name){
+
+	dataset* testdata;	
+	if( params->file_validation_set!=NULL ){
+		printf("READING VALIDATION DATA ...\n");
+		printf("%s\n",params->file_validation_set);
+		testdata = this->readClassificationDataSet(params->file_validation_set);
+	} else {
+		printf("READING TEST DATA ...\n");
+		testdata = this->readClassificationDataSet(params->file_testing_reg_path);
+	}
+	
+	printf("DONE ...\n");
+
+	char new_results_filename[8192];
+	sprintf(new_results_filename,"%s.---SYNC-B---.txt",path_file_name);
+	FILE* new_results_file = fopen(new_results_filename,"w");   
+ 	
+	TEST_Q* testQ = new TEST_Q(testdata,input_problem,params,params->cache_size);
+	
+	FILE* save_testing=NULL;
+	if(params->save_file_testing_reg_path)
+		save_testing=fopen(params->file_testing_reg_path,"w");
+
+	int support_size;
+	int mistakes;
+	double hinge_loss;
+	double l1norm;
+
+	printf("EXPLORING PATH ... N STEPS=%d\n",(int)params->n_steps_reg_path);
+	
+	for(int i=0; i < (int)params->n_steps_reg_path; i++){
+
+				sasso_model* model = models[i];
+				data_node* weights = model->weights;
+				printf("SYNTONIZING B FOR MODEL %d ...\n",i);
+	
+				double* SV_activations = testQ->getSVActivations(weights,support_size,l1norm);
+
+				double b_synt = chooseB(SV_activations,testQ,model->bias);
+				model->bias = b_synt;
+
+				if(save_testing!=NULL)
+					mistakes = testQ->testSVM(SV_activations,b_synt,mistakes,hinge_loss);
+
+				delete(SV_activations);
+				
+				fprintf(new_results_file,"%g", model->delta);
+				fprintf(new_results_file," %d",model->ss);
+				fprintf(new_results_file," %g",model->l1norm);
+				fprintf(new_results_file," %g",model->obj_val);
+				fprintf(new_results_file," %g",model->l2norm_cotter);
+				int j=0;
+
+				while(weights[j].index!=-1){
+					fprintf(new_results_file," %d:%g",weights[j].index,weights[j].value);
+					j++;
+				}
+
+				fprintf(new_results_file," -1:%g",model->bias);
+				fprintf(new_results_file,"\n");
+
+				if(save_testing!=NULL){
+					fprintf(save_testing,"%d %g %g %g\n",support_size,(double)mistakes/(double)testdata->l,hinge_loss,l1norm);
+				}
+	}
+
+	fclose(new_results_file);
+	if(save_testing!=NULL)
+		fclose(save_testing);
+
+	free(testdata->y);
+	free(testdata->x);
+	free(testdata->x_space);
+	free(testdata);
+	delete(testQ);
+
+}
+
 void SASSO_train::test_regularization_path(sasso_model** models, sasso_problem* input_problem, sasso_parameters* params, char* testset_file_name){
 
 	printf("READING TEST DATA ...\n");
@@ -154,6 +297,12 @@ void SASSO_train::test_all_regularization_path(sasso_model** models, sasso_probl
 		map_support_size[i] = support_size;
 		map_l1norm[i] = l1norm;
     }
+
+    free(testdata->y);
+    free(testdata->x);
+    free(testdata->x_space);
+    free(testdata);
+    delete(testQ);
 
     printf("END TESTING\n");
 }
@@ -691,6 +840,8 @@ void SASSO_train::parse_command_line(sasso_parameters* params, int argc, char **
 	params->degree = -1;
 	params->coef0 = 0.0;
 	params->test_data_file_name = NULL;
+	params->file_validation_set = NULL;
+    params->syntB = false;
 	params->save_models_along_the_path = false;
 	params->save_file_testing_reg_path = false;
 
@@ -757,6 +908,10 @@ void SASSO_train::parse_command_line(sasso_parameters* params, int argc, char **
 			case 'T':
 				params->test_data_file_name = new char[8192];
 				strcpy(params->test_data_file_name, argv[i]);
+				break;
+			case 'V':
+				params->file_validation_set = new char[8192];
+				strcpy(params->file_validation_set, argv[i]);
 				break;
 			case 'C':
 				if (argv[i-1][2]=='O'){
@@ -825,12 +980,20 @@ void SASSO_train::parse_command_line(sasso_parameters* params, int argc, char **
 					} else { 
 						params->randomization_strategy = BLOCKS;
 					}
+				} else if(argv[i-1][2]=='B'){
+						params->file_new_reg_path = new char[8192];
+						strcpy(params->file_new_reg_path, argv[i]);
 				}  
-
 				break;				 
 			case 'a':
 				params->sample_size = atoi(argv[i]);
 				break;
+            case 'b':
+                if(atoi(argv[i]) == 0)
+                    params->syntB = false;
+                else
+                    params->syntB = true;
+                break;
 			default:
 				fprintf(stderr,"unknown option\n");
 				exit_with_help();
@@ -860,7 +1023,7 @@ void SASSO_train::parse_command_line(sasso_parameters* params, int argc, char **
 		}
 	}
 
-	if(params->exp_type != TEST_REG_PATH && params->exp_type != TEST_ALL_REG_PATH){
+	if(params->exp_type != TEST_REG_PATH && params->exp_type != TEST_ALL_REG_PATH  && params->exp_type != SYNC_B){
 
 		if(i<argc-1) 
 		{
@@ -1023,8 +1186,12 @@ void SASSO_train::exit_with_help()
 	"Options:\n"
 	"-E : experiment-type (default 0)\n"
 	"     0 -- SASSO with known regularization parameter\n"
-	"     1 -- SASSO regularization path\n" 
-	"-k : kernel type (default 2)\n" 
+	"     1 -- SASSO regularization path\n"
+	"     2 -- test single model\n"
+	"     3 -- test SASSO regularization path\n"
+	"     4 -- Syntonization of b\n"
+	"     5 -- mean test SASSO regularization path of 10 validation files\n"
+	"-k : kernel type (default 2)\n"
 	"     0: LINEAR, 1: POLY, 2: RBF, 3: SIGMOID\n"
 	"-g : gamma parameter for RBF kernels\n" 
 	"-c : coef0 parameter for POLY and SIGMOID kernels\n" 
@@ -1041,6 +1208,7 @@ void SASSO_train::exit_with_help()
 	"-SM: save the model(s) after training\n"
 	"-m cachesize: set cache memory size in MB (default 200)\n"
 	"-a size: sample size for probabilistic sampling (default 60)\n"
+    "-b : synchronize B\n"
 	);
 	exit(1);
 }
@@ -1099,22 +1267,36 @@ int main(int argc, char **argv){
 	if(params->exp_type == TEST_REG_PATH){
 		printf("Reading SASSO Problem from = %s\n",input_file_name);
 		sasso_problem* problem = fw->readSASSOProblem(input_file_name);
-		sasso_model** models_path = fw->load_models_from_regularization_path(problem,path_file_name, params);
+		sasso_model** models_path = fw->load_models_from_regularization_path(problem,path_file_name, params, true);
 		if(params->test_data_file_name!=NULL){
 			fw->test_regularization_path(models_path,problem,params,params->test_data_file_name);
 		}
+	}
 
+	if(params->exp_type == SYNC_B){
+
+		printf("Reading SASSO Problem from = %s\n",input_file_name);
+		sasso_problem* problem = fw->readSASSOProblem(input_file_name);
+		sasso_model** models_path = fw->load_models_from_regularization_path(problem,path_file_name, params, false);
+		if((params->file_validation_set==NULL) && (params->file_testing_reg_path==NULL)){
+			printf("ERROR: Validation OR Test Data is Required ...\n");
+		} else {
+			printf("SYNTONIZING B .... \n");
+			fw->syntonizeB(models_path,problem,params,path_file_name);
+		}
+
+		printf("END SYNC B.\n");
 	}
 
 	if(params->exp_type == TEST_ALL_REG_PATH){
-		printf("Reading SASSO Problem from = %s for test ALL\n",input_file_name);
-		sasso_problem* problem = fw->readSASSOProblem(input_file_name);
+		printf("Readed SASSO Problem from = %s for test ALL\n",input_file_name);
         //Load the path sasso model
-		sasso_model** models_path = fw->load_models_from_regularization_path(problem,path_file_name, params);
+		sasso_model** models = fw->load_models_from_regularization_path(problem,path_file_name, params, false);
         std::map<int, double> model_missclass;
 		std::map<int, int> support_size;
 		std::map<int, double> hinge_loss;
 		std::map<int, double> l1norm;
+        std::string file_validation_set_wildcard;
         int step_init = 10;
         int step_size = 10;
         for(int i=step_init-1; i < (int)params->n_steps_reg_path; i+= step_size){
@@ -1122,15 +1304,41 @@ int main(int argc, char **argv){
 			hinge_loss[i] = 0;
         }
 
+		if (params->file_validation_set == NULL) {
+			printf("ERROR: Validation is Required ...\n");
+		} else {
+            file_validation_set_wildcard = std::string(params->file_validation_set);
+		}
+
 
         for(int i = 1; i<=10; i++) {
+			if (params->syntB) {
+				//reload model
+				if(i>1){
+					delete(models);
+					models = fw->load_models_from_regularization_path(problem,path_file_name, params, false);
+				}
+
+                // set validation_file
+                std::string file_validation_set_str = file_validation_set_wildcard + std::to_string(i);
+                params->file_validation_set = new char [file_validation_set_str.length()+1];
+                std::strcpy (params->file_validation_set, file_validation_set_str.c_str());
+
+                printf("SYNTONIZING B .... \n");
+				sasso_model* model = models[99];
+				printf("*** B before: %f \n",model->bias);
+                fw->syntonizeB(models, problem, params, path_file_name);
+				model = models[90];
+				printf("*** B after: %f \n",model->bias);
+			}
+
             //test data test_data_file_name
             if (params->test_data_file_name != NULL) {
                 // models_path = path of sasso.
                 // problem train/target from input_file_name.
                 // params:
                 // test_data_file_name = test file.
-                fw->test_all_regularization_path(models_path, problem, params,
+                fw->test_all_regularization_path(models, problem, params,
                                                  std::string(params->test_data_file_name) + std::to_string(i),
                                                  step_init, step_size, model_missclass,
 												 support_size, hinge_loss, l1norm);
@@ -1150,11 +1358,14 @@ int main(int argc, char **argv){
         }
 		if(save_testing!=NULL)
 			fclose(save_testing);
+		delete(models);
 
 	}
 
 	//test_input_SVM(sasso_problem* prob, sasso_parameters* params, char* testset_file_name){
 
+	delete(fw);
+	delete(problem);
 
 	return 0;
 
