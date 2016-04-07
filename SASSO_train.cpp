@@ -118,29 +118,22 @@ double SASSO_train::chooseB(double* SV_activations, TEST_Q* testQ, double best_b
 	double b_candidate = b_min - step;
 	double best_b = best_b_now;
 	int best_error = testQ->testSVM(SV_activations,best_b,mistakes__,hinge__);
-	double best_hinge=hinge__;
 
 	printf("CURRENT B = %g\n",best_b);
-	printf("CURRENT MARGEN = %f\n",best_hinge);
+	printf("CURRENT ERROR = %d\n",best_error);
 	
 	for(int b_idx=0;b_idx<n_b;b_idx++){
 		b_candidate = b_candidate + step;
 		int error = testQ->testSVM(SV_activations,b_candidate,mistakes__,hinge__);
-//		if(error < best_error){
-//			if(verbose)
-//				printf("BETTER B ... B= %g, ERROR=%d, CURRENT_BEST_ERR=%d, CURRENT_BEST_B=%g\n",b_candidate,error,best_error,best_b);
-//			best_error = error;
-//			best_b = b_candidate;
-//		}
-		if(hinge__ > best_hinge){
+		if(error < best_error){
 			if(verbose)
-				printf("BETTER B ... B= %g, MARGEN=%f, CURRENT_BEST_MARGEN=%f, CURRENT_BEST_B=%g\n",b_candidate,hinge__,best_hinge,best_b);
-			best_hinge = hinge__;
+				printf("BETTER B ... B= %g, ERROR=%d, CURRENT_BEST_ERR=%d, CURRENT_BEST_B=%g\n",b_candidate,error,best_error,best_b);
+			best_error = error;
 			best_b = b_candidate;
 		}
 	}
 	printf("LAST B EXPLORED = %g\n",b_candidate);
-	printf("LAST MARGEN = %f\n",best_hinge);
+	printf("LAST ERROR = %d\n",best_error);
 
 	b_ =  best_b;
 	printf("BEST_B = %g\n",b_);
