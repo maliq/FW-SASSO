@@ -1322,7 +1322,7 @@ int main(int argc, char **argv){
                 // set validation_file
                 std::string file_validation_set_str = file_validation_set_wildcard + std::to_string(i);
                 params->file_validation_set = new char [file_validation_set_str.length()+1];
-                std::strcpy (params->file_validation_set, file_validation_set_str.c_str());
+                strcpy (params->file_validation_set, file_validation_set_str.c_str());
 
                 printf("SYNTONIZING B .... \n");
 				sasso_model* model = models[99];
