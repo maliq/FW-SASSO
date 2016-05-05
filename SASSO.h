@@ -58,8 +58,11 @@ class SASSO
 		BlockSampler* sampler;
 
 		int StandardFW(double convergence_eps, bool cooling, bool randomized);
-	
+		int FullyCorrectiveFW(double convergence_eps, bool cooling, bool randomized);
+
 		double TowardVertex(int &towardIdx,double Sk, double Fk, double delta); 
+		double ActiveTowardVertex(int &towardIdx, double Sk, double Fk, double delta);
+
 		double AwayVertex(int &awayIdx); 
 		
 		double ActiveTowardVertex(int &towardIdx);
@@ -148,7 +151,6 @@ public:
 			stats->n_iterations = (double)GetFWIterations();
 			stats->n_performed_dot_products = (double)sassoQ->get_real_kevals();
 			stats->n_requested_dot_products = (double)sassoQ->get_requested_kevals();
-
 			stats->time_towards_random=time_towards_1;
 			stats->time_towards_active=time_towards_2;
 			stats->time_cycle_weights_FW=time_cycle_weights_FW;

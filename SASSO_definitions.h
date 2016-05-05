@@ -17,7 +17,7 @@ struct sasso_problem;
 struct sasso_parameters;
 struct sasso_model;
 
-enum { BC, FW, MODFW, PARTAN, SWAP}; //training algorithms
+enum { FW, FULLYFW}; //training algorithms
 enum { ZERO };//initialization methods
 enum { PRIMAL, DUAL };//data representation model
 enum { EXP_SINGLE_TRAIN, EXP_REGULARIZATION_PATH, TEST_INPUT_MODEL, TEST_REG_PATH, SYNC_B, TEST_ALL_REG_PATH};
@@ -88,6 +88,7 @@ struct sasso_parameters
 	double reg_param_step;
 	double eps_regularization_path;
 	double n_steps_reg_path;
+	double frac_min_delta;
 
 	bool computing_regularization_path;
 	bool quick_stop_regularization_path;
