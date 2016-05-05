@@ -1290,8 +1290,8 @@ int main(int argc, char **argv){
 		std::map<int, double> hinge_loss;
 		std::map<int, double> l1norm;
         std::string file_validation_set_wildcard;
-        int step_init = 10;
-        int step_size = 10;
+        int step_init = 1;
+        int step_size = 9;
         for(int i=step_init-1; i < (int)params->n_steps_reg_path; i+= step_size){
             model_missclass[i] = 0;
 			hinge_loss[i] = 0;
