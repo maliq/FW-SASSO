@@ -147,15 +147,17 @@ double SASSO_train::chooseB(double* SV_activations, TEST_Q* testQ, double best_b
 
 void SASSO_train::syntonizeB(sasso_model **models, sasso_problem* input_problem, sasso_parameters* params, char* path_file_name){
 
-	dataset* testdata;	
+	dataset* testdata;
+	char* tunning_file_name;
 	if( params->file_validation_set!=NULL ){
 		printf("READING VALIDATION DATA ...\n");
-		printf("%s\n",params->file_validation_set);
-		testdata = this->readClassificationDataSet(params->file_validation_set);
+		tunning_file_name = params->file_validation_set;
 	} else {
 		printf("READING TEST DATA ...\n");
-		testdata = this->readClassificationDataSet(params->file_testing_reg_path);
+		tunning_file_name = params->file_testing_reg_path;
 	}
+	printf("%s\n", tunning_file_name);
+	testdata = this->readClassificationDataSet(tunning_file_name);
 	
 	printf("DONE ...\n");
 
@@ -176,6 +178,9 @@ void SASSO_train::syntonizeB(sasso_model **models, sasso_problem* input_problem,
 
 	printf("EXPLORING PATH ... N STEPS=%d\n",(int)params->n_steps_reg_path);
 	
+
+	clock_t time_start = clock ();
+
 	for(int i=0; i < (int)params->n_steps_reg_path; i++){
 
 				sasso_model* model = models[i];
@@ -212,9 +217,20 @@ void SASSO_train::syntonizeB(sasso_model **models, sasso_problem* input_problem,
 				}
 	}
 
+	clock_t time_end = clock ();
+	double physical_time = (double)(time_end - time_start)/CLOCKS_PER_SEC;
+
+    std::basic_ifstream<char> exists_file = std::ifstream(params->summary_exp_file_name);
+
+	FILE* summary_exp = fopen(params->summary_exp_file_name,"a");
+    if(!exists_file)
+        fprintf(summary_exp,"TUNNING DATASET;TIME B SYNTONIZATION;NUMBER OF CANDIDATES TESTED;\n");
+	fprintf(summary_exp,"%s;%f;%d\n", tunning_file_name,physical_time,N_BES_SYNC);
+	
 	fclose(new_results_file);
 	if(save_testing!=NULL)
 		fclose(save_testing);
+	fclose(summary_exp);
 
 	free(testdata->y);
 	free(testdata->x);
