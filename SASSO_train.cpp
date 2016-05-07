@@ -9,6 +9,9 @@
 #include <stdexcept>
 #include <map>
 
+#define N_STEPS_PATH 10.0
+#define FRAC_MIN_DELTA 10000.0
+#define N_BES_SYNC 1000
 
 double SASSO_train::l1norm_input_SVM(sasso_problem* prob){
 
@@ -111,7 +114,7 @@ double SASSO_train::chooseB(double* SV_activations, TEST_Q* testQ, double best_b
 	int mistakes__=0;
 	double hinge__ = 0.0;
 
-	int n_b = 10000;
+	int n_b = N_BES_SYNC;
 	double step = (b_max - b_min)/((double)n_b);
 	printf("B_STEP = %g\n",step);
 
@@ -317,9 +320,9 @@ void SASSO_train::compute_delta_range(sasso_problem* problem, sasso_parameters* 
 
 	double origina_l1_norm = this->l1norm_input_SVM(problem);
 	
-	params->n_steps_reg_path = 100.0;
+	params->n_steps_reg_path = N_STEPS_PATH;
 	params->reg_param_max = origina_l1_norm;
-	params->reg_param_min = params->reg_param_max/(5.0*params->n_steps_reg_path);
+	params->reg_param_min = params->reg_param_max/params->frac_min_delta;
 	params->reg_param = params->reg_param_min;
 	params->reg_param_step = params->reg_param_max/params->n_steps_reg_path;
 	
@@ -334,7 +337,7 @@ sasso_model** SASSO_train::compute_regularization_path(sasso_problem* prob, sass
 	
 	//CHECK PARAMETERS
 	if(params->n_steps_reg_path <= 0)
-		params->n_steps_reg_path = 100.0;
+		params->n_steps_reg_path = N_STEPS_PATH;
 	if((params->reg_param_max < 0.0) || (params->reg_param_min < 0.0))
 		compute_delta_range(prob, params);
 	if(params->reg_param_min < 0.0)
@@ -802,8 +805,8 @@ void SASSO_train::parse_command_line(sasso_parameters* params, int argc, char **
 
 	params->exp_type = EXP_SINGLE_TRAIN;
 	params->cache_size   = 2000;	
-	params->eps          = 1e-4;
-	params->stopping_criterion = STOPPING_WITH_INF_NORM;
+	params->eps          = 1e-5;
+	params->stopping_criterion = STOPPING_WITH_OBJECTIVE;
 	params->sample_size  = 139;
 	params->training_algorithm = FW;
 	params->cooling = false;
@@ -825,7 +828,8 @@ void SASSO_train::parse_command_line(sasso_parameters* params, int argc, char **
 	params->safe_stopping = false;
 	params->nsamplings_safe_stopping = 1;
 	params->nsamplings_iterations = 1;
-	params->n_steps_reg_path = 100;
+	params->n_steps_reg_path = N_STEPS_PATH;
+	params->frac_min_delta = FRAC_MIN_DELTA;
 	params->BORDER_WARM_START = false;
 	params->ACTIVE_SET_HEURISTIC = false;
 	params->kernel_type = -1;
@@ -863,7 +867,7 @@ void SASSO_train::parse_command_line(sasso_parameters* params, int argc, char **
 				if(argv[i-1][2]=='F'){
 					params->nfold = atoi(argv[i]);
 				} else if (argv[i-1][2]=='S'){
-					params->repetitions = atoi(argv[i]);
+					params->n_steps_reg_path = atof(argv[i]);
 				} else if (argv[i-1][2]=='M'){
 					if(atof(argv[i])>0.0)
 						params->normalize = true;
@@ -886,17 +890,12 @@ void SASSO_train::parse_command_line(sasso_parameters* params, int argc, char **
 				}
 				break;
 			case 'F':
-				if(argv[i-1][2]=='T'){
-					params->fixed_test = true;
-				}
-				else if(argv[i-1][2]=='S'){
-					params->fixed_train = true;
+				if(argv[i-1][2]=='D'){
+					params->frac_min_delta = atof(argv[i]);
 				} else if(argv[i-1][2]=='M'){
 					params->frecuency_messages = atoi(argv[i]);
 					printf(">> FM:%d\n",params->frecuency_messages);
-					i=i+1;
 				}
-				i=i-1;
 				break;
 			case 'T':
 				params->test_data_file_name = new char[8192];
@@ -1146,14 +1145,8 @@ const char* SASSO_train::getTextTrainingAlgorithm(int code){
 			case FW:
 				return "FW";
 				break;
-			case MODFW:
-				return "MFW";
-				break;
-			case PARTAN:
-				return "PARTAN-FW";
-				break;
-			case SWAP:
-				return "SWAP-FW";
+			case FULLYFW:
+				return "FULLY CORRECTIVE FW";
 				break;
 		}
 	return "OTHER (CHECK)";
