@@ -1031,6 +1031,20 @@ void SASSO_train::parse_command_line(sasso_parameters* params, int argc, char **
 		params->summary_exp_file_name = new char[8192];
 		sprintf(params->summary_exp_file_name,"%s.SASSO.SUMMARY.%s.%.1E.%s.%s.txt",input_file_name,getTextTrainingAlgorithm(params->training_algorithm),params->eps,getModalityAlgorithm(params),stamp);
 	
+	} else if(params->exp_type == SYNC_B || params->exp_type == TEST_ALL_REG_PATH){
+
+		char stamp[64];
+		sprintf(stamp,"%s",give_me_the_time());
+
+		if(i<argc-1) 
+		{
+			strcpy(path_file_name,argv[i+1]);
+			
+		} 
+		
+		params->summary_exp_file_name = new char[8192];
+		sprintf(params->summary_exp_file_name,"%s.SUMMARY-B.SYNTONIZATION-%s.txt",path_file_name,stamp);
+
 	} else {
 
 		if(i<argc-1) 
