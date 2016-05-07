@@ -81,7 +81,7 @@ public:
 		}
 
 		printf("DETECTED %d MODELS\n",count_models);
-
+		params->n_steps_reg_path = count_models;
 		myfile_.close();
 		sasso_model** models =  new sasso_model*[count_models];
 
