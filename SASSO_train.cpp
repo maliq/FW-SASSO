@@ -8,6 +8,7 @@
 #include <limits>
 #include <stdexcept>
 #include <map>
+#include <sys/stat.h>
 
 #define N_STEPS_PATH 10.0
 #define FRAC_MIN_DELTA 10000.0
@@ -220,10 +221,11 @@ void SASSO_train::syntonizeB(sasso_model **models, sasso_problem* input_problem,
 	clock_t time_end = clock ();
 	double physical_time = (double)(time_end - time_start)/CLOCKS_PER_SEC;
 
-    std::basic_ifstream<char> exists_file = std::ifstream(params->summary_exp_file_name);
+    struct stat st;
+    int result_file = stat(params->summary_exp_file_name, &st);
 
 	FILE* summary_exp = fopen(params->summary_exp_file_name,"a");
-    if(!exists_file)
+    if(result_file !=0)
         fprintf(summary_exp,"TUNNING DATASET;TIME B SYNTONIZATION;NUMBER OF CANDIDATES TESTED;\n");
 	fprintf(summary_exp,"%s;%f;%d\n", tunning_file_name,physical_time,N_BES_SYNC);
 	
