@@ -99,7 +99,7 @@ fi
 
 if [ "$OP" == "train" ]; then
     echo "sasso-train -E 1 -k 2 -g ${K} -SC ${SC} -RS ${R} -FM ${FM} -NS ${NS} -FD ${FD} -e ${TOL} -T $dataset_dir/$TRAIN_DATA ${SMO_SOLUTION}"
-    sasso-train -E 1 -k 2 -g ${K} -SC ${SC} -RS ${R} -FM ${FM} -NS ${NS} -FD ${FD} -e ${TOL} -T $dataset_dir/$TRAIN_DATA ${SMO_SOLUTION}
+    sasso-train -E 1 -k 2 -g ${K} -SC ${SC} -RS ${R} -FM ${FM} -NS ${NS} -MA ${MA}-FD ${FD} -e ${TOL} -T $dataset_dir/$TRAIN_DATA ${SMO_SOLUTION}
 fi
 if [ "$OP" == "test" ]; then
     if [[ -z $SASSO_SOLUTION ]]
