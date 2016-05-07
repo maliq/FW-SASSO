@@ -1083,6 +1083,8 @@ void SASSO_train::printParams(FILE* file, sasso_parameters* params){
 		fprintf(file,"MIN - Regularization Parameter (delta_min): %g\n",params->reg_param_min);
 		fprintf(file,"MAX - Regularization Parameter (delta_max): %g\n",params->reg_param_max);
 		fprintf(file,"STEP - Regularization Parameter (delta_step): %g\n",params->reg_param_step);
+		fprintf(file,"NUMBER STEPS IN PATH: %g\n",params->n_steps_reg_path);
+		fprintf(file,"FRACTION TO CALCULATE DELTA MIN: %g\n",params->frac_min_delta);		
 	}
 
 	if(params->cooling)
@@ -1126,9 +1128,7 @@ void SASSO_train::printStats(FILE* file, sasso_stats* stats){
 	fprintf(file,"Performed Dot Products: %g\n",stats->n_performed_dot_products);
 	fprintf(file,"Requested Dot Products: %g\n",stats->n_requested_dot_products);
 	fprintf(file,"Running Time (Secs): %g\n",stats->physical_time);
-	fprintf(file,"Time FW Weights (Secs): %g\n",stats->time_cycle_weights_FW);
-	fprintf(file,"Time Towards Random Part (Secs): %g\n",stats->time_towards_random);
-	fprintf(file,"Time Towards Active Part (Secs): %g\n",stats->time_towards_active);
+
 
 }
 
@@ -1284,7 +1284,7 @@ int main(int argc, char **argv){
 		std::map<int, double> l1norm;
         std::string file_validation_set_wildcard;
         int step_init = 1;
-        int step_size = 9;
+        int step_size = 1;
         for(int i=step_init-1; i < (int)params->n_steps_reg_path; i+= step_size){
             model_missclass[i] = 0;
 			hinge_loss[i] = 0;
@@ -1311,11 +1311,7 @@ int main(int argc, char **argv){
                 strcpy (params->file_validation_set, file_validation_set_str.c_str());
 
                 printf("SYNTONIZING B .... \n");
-				sasso_model* model = models[99];
-				printf("*** B before: %f \n",model->bias);
                 fw->syntonizeB(models, problem, params, path_file_name);
-				model = models[90];
-				printf("*** B after: %f \n",model->bias);
 			}
 
             //test data test_data_file_name
