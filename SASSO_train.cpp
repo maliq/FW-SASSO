@@ -1268,14 +1268,16 @@ int main(int argc, char **argv){
 	
 	if(params->exp_type == EXP_REGULARIZATION_PATH){
 		fw->printParams(stdout,params);
+		FILE* summary_exp = fopen(params->summary_exp_file_name,"w");
 		params->save_models_along_the_path = true;
 		sasso_model** models = fw->compute_regularization_path(problem,params,stats);
 		if(params->test_data_file_name!=NULL){
 			fw->test_regularization_path(models,problem,params,params->test_data_file_name);
 		}
 
-		//fw->printParams(summary_exp,params);
-		//fw->printStats(summary_exp,stats);
+		fw->printParams(summary_exp,params);
+		fw->printStats(summary_exp,stats);
+		fclose(summary_exp);
 	}	
 	
 	if(params->exp_type == TEST_INPUT_MODEL){
