@@ -1178,7 +1178,8 @@ const char* SASSO_train::getTextTrainingAlgorithm(int code){
 				return "FW";
 				break;
 			case FULLYFW:
-				return "FULLY CORRECTIVE FW";
+//				return "FULLY CORRECTIVE FW";
+                return "FULLY_FW";
 				break;
 		}
 	return "OTHER (CHECK)";
