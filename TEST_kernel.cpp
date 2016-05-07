@@ -1,6 +1,7 @@
 #include "TEST_kernel.h" 
 #include <limits>
-#include <cmath> 
+#include <cmath>
+#include <iostream>
 
 
 TEST_Q::TEST_Q(const dataset* testset_, const sasso_problem* train_problem_, const sasso_parameters* param_, double cache_size)
@@ -84,7 +85,7 @@ double* TEST_Q::getSVActivations(data_node* weights, int& support_size, double& 
 int TEST_Q::testSVM(double* activations, double bias, int& mistakes, double& hinge){
 
 	mistakes=0;
-	hinge=0.0;
+	hinge=((double)testset->y[0])*(activations[0] + bias);
 	int predicted_class;
 
 	for(int test_idx=0; test_idx<testset->l; test_idx++){
@@ -94,7 +95,9 @@ int TEST_Q::testSVM(double* activations, double bias, int& mistakes, double& hin
 			int true_class = (testset->y[test_idx]>=0.0) ? 1 : -1;
 			if(predicted_class!=true_class)
 				mistakes += 1;
-			hinge += (double)testset->y[test_idx]*discriminant;
+			double hinge_current = (double)testset->y[test_idx]*discriminant;
+			if(hinge_current < hinge)
+				hinge = hinge_current;
 	}
 	
 	return mistakes;
