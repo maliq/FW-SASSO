@@ -11,11 +11,11 @@ OPTIONS:
    -o value     operation: train or test options
    -b           syntonice B, default disable
    -T value     tolerance, default: 0.00001
-   -S value     SC, dedault:0
-   -R           enable ramdonized version, default: disabled
-   -F value     FM, default: 100000
+   -S value     Stop Criterion 0:OBJECTIVE, 1:INF_NORM, 2:DUAL_GAP, default:0
+   -R           enable randomized version, default: disabled
+   -F value     FM, message frequency, default: 100000
    -N value     sasso path point, default: 10
-   -D value     FD, default: 5000
+   -D value     portion of norm of vector solution, default: 5000
    -a           enable tunning SV's, default: disabled
    -s value     sasso model, mandatory to test
    -v           Verbose
@@ -60,7 +60,7 @@ do
              echo "set n: ${norms}"
              ;;
          F)
-             SC=$OPTARG
+             FM=$OPTARG
              echo "set FM: ${FM}"
              ;;
          N)
