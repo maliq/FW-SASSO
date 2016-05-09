@@ -49,6 +49,30 @@ Example:
 
 	./sasso-train -E 3 -k 2 -g 0.025 -T experiment-b-timit/TIMIT.3.binary.test.01.txt -X experiment-b-timit/results_new_testing.txt experiment-b-timit/TIMIT_3binary_SVM_SMO_BIASED-SupportSet.txt experiment-b-timit/TIMIT_3binary_SVM_SMO_BIASED-SupportSet.txt.SASSO.RESULTS.FW.1.0E-07.DETERMINISTIC.2016-01-29-14hrs-29mins-48secs.txt
 
+
+### Test using 10 validation/test split, Option -E 5
+
+
+Test sasso SVM using 10 validation/test split, also it allows syntonize bias using the validation dataset before test the sasso SVM.
+When syntonize bias, generates a file with the same name of sasso svm but with suffix "SUMMARY-B.SYNTONIZATION" with time and B tested.
+Command:
+
+    ./sasso-train -E 5 options optimal_SVM_file sasso_SVM_file
+
+Options to test using 10 split test set, parameters:
+
+    -V Vadalition dataset wildcard filename, only needed if syntonize bias, ie ijcnn1.original.test.01.txt.val. that will be complete from 1 to 10 using: (ijcnn1.original.test.01.txt.val.1, ijcnn1.original.test.01.txt.val.2, .., ijcnn1.original.test.01.txt.val.10)
+    -T Test dataset wildcard filename, ie ijcnn1.original.test.01.txt.test. that will be complete from 1 to 10 using: (ijcnn1.original.test.01.txt.test.1, ijcnn1.original.test.01.txt.test.2, .., ijcnn1.original.test.01.txt.test.10)
+    -b value : 1 to syntonize bias 0 otherwise. default value: 0
+    -X filename: optional output filename to write results from test process.
+    -K kernel used, 1: POLINOMIAL, 2: GAUSSIAN
+    -g gaussian parameter, depends of dataset.
+
+Example:
+
+    ./sasso-train -E 5 -k 2 -g 1.0 -b 0 -V /Users/maliq/Documents/sasso/IJCNN/ijcnn1.original.test.01.txt.val. -T /Users/maliq/Documents/sasso/IJCNN/ijcnn1.original.test.01.txt.test. -X /Users/maliq/Documents/sasso/experiments/result/IJCNN_sasso_10_step.txt /Users/maliq/Documents/sasso/experiments/inputSasso/IJCNN_SVM_SMO_BIASED_100000-SupportSet.txt /Users/maliq/Documents/sasso/experiments/inputSasso/IJCNN_SVM_SMO_BIASED_100000-SupportSet.txt.SASSO.RESULTS.FW.1.0E-07.DETERMINISTIC.2016-01-29-12hrs-36mins-07secs.txt
+
+
 ## TODO
 * Randomized version works but has not been optimized in terms of efficiency.
 * Probably, it is a good idea to add the recursive computation of the gradients corresponding to active points.
