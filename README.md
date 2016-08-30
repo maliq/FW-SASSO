@@ -9,7 +9,7 @@
 
 
 ## Datasets
-* Adult https://raw.githubusercontent.com/maliq/SASSO_DATASETS/master/w8a.tar.gz
+* Adult https://raw.githubusercontent.com/maliq/SASSO_DATASETS/master/a8a.tar.gz
 * IJCNN https://raw.githubusercontent.com/maliq/SASSO_DATASETS/master/IJCNN.tar.gz
 * Web https://raw.githubusercontent.com/maliq/SASSO_DATASETS/master/w8a.tar.gz
 * TIMIT https://raw.githubusercontent.com/maliq/SASSO_DATASETS/master/TIMIT.tar.gz
