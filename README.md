@@ -8,6 +8,13 @@
 * The latter can be applied immediately after computing the path, or from scratch providing the name of the results file.
 
 
+## Datasets
+* Adult https://raw.githubusercontent.com/maliq/SASSO_DATASETS/master/w8a.tar.gz
+* IJCNN https://raw.githubusercontent.com/maliq/SASSO_DATASETS/master/IJCNN.tar.gz
+* Web https://raw.githubusercontent.com/maliq/SASSO_DATASETS/master/w8a.tar.gz
+* TIMIT https://raw.githubusercontent.com/maliq/SASSO_DATASETS/master/TIMIT.tar.gz
+* MNIST https://raw.githubusercontent.com/maliq/SASSO_DATASETS/master/MNIST.tar.gz
+
 ## Usage
 
 ### General usage.
